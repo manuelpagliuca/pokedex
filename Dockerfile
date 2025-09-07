@@ -1,3 +1,4 @@
+# Build stage
 FROM openjdk:21-jdk-slim AS build
 
 WORKDIR /app
@@ -5,9 +6,13 @@ WORKDIR /app
 COPY build.gradle settings.gradle gradlew /app/
 COPY gradle /app/gradle
 
+RUN chmod +x gradlew
+
+RUN ./gradlew build --no-daemon -x test -x bootJar || true
+
 COPY src /app/src
 
-RUN chmod +x gradlew && ./gradlew bootJar --no-daemon -x test
+RUN ./gradlew bootJar --no-daemon -x test
 
 FROM openjdk:21-jdk-slim
 

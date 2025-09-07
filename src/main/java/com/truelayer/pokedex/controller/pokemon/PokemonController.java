@@ -20,7 +20,6 @@ public class PokemonController {
 
     @GetMapping("/{name}")
     public ResponseEntity<PokemonResponse> getPokemon(@PathVariable String name) {
-        System.out.println(getDelegate.getPokemonInfo(name));
         return ResponseEntity.ok(getDelegate.getPokemonInfo(name));
     }
 

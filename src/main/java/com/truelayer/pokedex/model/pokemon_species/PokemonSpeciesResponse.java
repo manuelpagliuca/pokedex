@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class PokemonSpeciesResponse {
+    private String name;
     private Habitat habitat;
     @JsonProperty("is_legendary")
     private boolean isLegendary;
@@ -48,6 +49,10 @@ public class PokemonSpeciesResponse {
     public static class Language {
         private String name;
 
+        public Language(String name) {
+            this.name = name;
+        }
+
         public String getName() {
             return name;
         }
@@ -55,6 +60,14 @@ public class PokemonSpeciesResponse {
         public void setName(String name) {
             this.name = name;
         }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Habitat getHabitat() {

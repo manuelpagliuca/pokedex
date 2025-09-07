@@ -1,28 +1,25 @@
 package com.truelayer.pokedex.service;
 
+import com.truelayer.pokedex.client.PokemonApiClient;
 import com.truelayer.pokedex.model.pokemon.PokemonResponse;
 import com.truelayer.pokedex.model.pokemon.enums.PokemonHabitat;
 import com.truelayer.pokedex.model.pokemon_species.PokemonSpeciesResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class PokemonService {
     private static final Logger logger = LoggerFactory.getLogger(PokemonService.class);
-
-    private final RestTemplate restTemplate;
-    private static final String POKEMON_SPECIES_URI = "https://pokeapi.co/api/v2/pokemon-species/";
     private static final String LANGUAGE = "en";
+    private final PokemonApiClient pokemonApiClient;
 
-    public PokemonService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public PokemonService(PokemonApiClient pokemonApiClient) {
+        this.pokemonApiClient = pokemonApiClient;
     }
 
     public PokemonResponse getInfo(String pokemonName) {
-        PokemonSpeciesResponse pokemonSpeciesResponse = getPokemonSpeciesResponse(pokemonName);
+        PokemonSpeciesResponse pokemonSpeciesResponse = pokemonApiClient.getPokemonSpecies(pokemonName);
 
         if (pokemonSpeciesResponse == null) {
             logger.error("No data found for Pokémon: {}", pokemonName);
@@ -36,12 +33,6 @@ public class PokemonService {
         logger.info("Fetched Pokémon [{}] → habitat={}, legendary={}", pokemonName, habitat, isLegendary);
 
         return new PokemonResponse(pokemonName, description, habitat.name().toLowerCase(), isLegendary);
-    }
-
-    private PokemonSpeciesResponse getPokemonSpeciesResponse(String pokemonName) {
-        String url = composeUrl(pokemonName);
-        logger.debug("Fetching Pokémon info from URL: {}", url);
-        return restTemplate.getForObject(url, PokemonSpeciesResponse.class);
     }
 
     private String extractDescription(PokemonSpeciesResponse response) {
@@ -63,9 +54,5 @@ public class PokemonService {
             return PokemonHabitat.UNKNOWN;
         }
         return PokemonHabitat.fromString(response.getHabitat().getName());
-    }
-
-    private static String composeUrl(String name) {
-        return UriComponentsBuilder.fromUriString(POKEMON_SPECIES_URI + name).toUriString();
     }
 }

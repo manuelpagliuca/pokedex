@@ -1,60 +1,68 @@
 package com.truelayer.pokedex.service;
 
+import com.truelayer.pokedex.client.PokemonApiClient;
 import com.truelayer.pokedex.model.pokemon.PokemonResponse;
+import com.truelayer.pokedex.model.pokemon.enums.PokemonHabitat;
 import com.truelayer.pokedex.model.pokemon_species.PokemonSpeciesResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestTemplate;
+import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class PokemonServiceTest {
 
-    @Mock
-    private RestTemplate restTemplate;
-
-    @InjectMocks
+    private PokemonApiClient apiClient;
     private PokemonService pokemonService;
 
-    @Test
-    void shouldReturnPokemonResponse_whenApiReturnsValidData() {
-        // given
-        String pokemonName = "mewtwo";
-        String url = "https://pokeapi.co/api/v2/pokemon-species/" + pokemonName;
+    @BeforeEach
+    void setUp() {
+        apiClient = Mockito.mock(PokemonApiClient.class);
+        pokemonService = new PokemonService(apiClient);
+    }
 
-        PokemonSpeciesResponse response = new PokemonSpeciesResponse();
-        response.setLegendary(true);
+    @Test
+    void getInfo_shouldReturnCorrectPokemonResponse() {
+        // Arrange
+        PokemonSpeciesResponse.FlavorTextEntry flavorTextEntry = new PokemonSpeciesResponse.FlavorTextEntry();
+        flavorTextEntry.setLanguage(new PokemonSpeciesResponse.Language("en"));
+        flavorTextEntry.setFlavorText("Test description");
 
         PokemonSpeciesResponse.Habitat habitat = new PokemonSpeciesResponse.Habitat();
-        habitat.setName("rare");
-        response.setHabitat(habitat);
+        habitat.setName("cave");
 
-        PokemonSpeciesResponse.Language lang = new PokemonSpeciesResponse.Language();
-        lang.setName("en");
+        PokemonSpeciesResponse speciesResponse = new PokemonSpeciesResponse();
+        speciesResponse.setFlavorTextEntries(List.of(flavorTextEntry));
+        speciesResponse.setHabitat(habitat);
+        speciesResponse.setLegendary(true);
 
-        PokemonSpeciesResponse.FlavorTextEntry entry = new PokemonSpeciesResponse.FlavorTextEntry();
-        entry.setFlavorText("Created by a scientist...");
-        entry.setLanguage(lang);
+        when(apiClient.getPokemonSpecies("zubat")).thenReturn(speciesResponse);
 
-        response.setFlavorTextEntries(List.of(entry));
+        // Act
+        PokemonResponse response = pokemonService.getInfo("zubat");
 
-        when(restTemplate.getForObject(url, PokemonSpeciesResponse.class)).thenReturn(response);
+        // Assert
+        assertEquals("zubat", response.getName());
+        assertEquals("Test description", response.getDescription());
+        assertEquals(PokemonHabitat.CAVE.name().toLowerCase(), response.getHabitat());
+        assertTrue(response.isLegendary());
 
-        // when
-        PokemonResponse result = pokemonService.getInfo(pokemonName);
+        verify(apiClient, times(1)).getPokemonSpecies("zubat");
+    }
 
-        // then
-        assertEquals("mewtwo", result.getName());
-        assertEquals("created by a scientist...", result.getDescription().toLowerCase());
-        assertEquals("rare", result.getHabitat());
-        assertTrue(result.isLegendary());
+    @Test
+    void getInfo_shouldThrowException_whenNoDataFound() {
+        // Arrange
+        when(apiClient.getPokemonSpecies("unknown")).thenReturn(null);
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            pokemonService.getInfo("unknown");
+        });
+
+        assertEquals("No data found for unknown", exception.getMessage());
     }
 }

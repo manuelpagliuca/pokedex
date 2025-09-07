@@ -44,10 +44,10 @@ The API will be available at: http://localhost:8080
 
 ## API Endpoints Overview
 
-| Endpoint                        | Description                          |
-|---------------------------------|--------------------------------------|
-| `GET /pokemon/{name}`           | Get Pokémon information (English description). |
-| `GET /pokemon/translate/{name}` | Get translated Pokémon information (Yoda/Shakespeare description). |
+| Endpoint                         | Description                          |
+|----------------------------------|--------------------------------------|
+| `GET /pokemon/{name}`            | Get Pokémon information (English description). |
+| `GET /pokemon/translated/{name}` | Get translated Pokémon information (Yoda/Shakespeare description). |
 
 
 ### GET /pokemon/{name}
@@ -76,13 +76,13 @@ The response will include (as JSON):
 }
 ```
 
-### GET /pokemon/translate/{name}
+### GET /pokemon/translated/{name}
 
 This API provides a GET endpoint that accepts a Pokemon's name as a path parameter.
 
 Example:
 ```
-curl http://localhost:8080/pokemon/zubat
+curl http://localhost:8080/pokemon/translated/mewtwo
 ```
 
 It will return almost the same information as [GET /pokemon/{name}](#get-pokemonname), the difference lies

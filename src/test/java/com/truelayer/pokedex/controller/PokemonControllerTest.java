@@ -32,6 +32,6 @@ class PokemonControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("mewtwo"))
                 .andExpect(jsonPath("$.habitat").value("rare"))
-                .andExpect(jsonPath("$.legendary").value(true));
+                .andExpect(jsonPath("$.isLegendary").value(true));
     }
 }
